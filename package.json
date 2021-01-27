@@ -1,0 +1,22 @@
+{
+  "name": "definitions-finder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:run": "parcel index.html mmi.st output/OrigMMI2020.pdf"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pdfjs-dist": "^2.5.207"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.22",
+    "@types/pdfjs-dist": "^2.1.7",
+    "dts-gen": "^0.6.0",
+    "marked": "^1.2.7",
+    "typescript": "^4.1.3"
+  }
+}
