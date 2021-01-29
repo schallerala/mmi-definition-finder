@@ -1,1 +1,0 @@
-../definitions-finder-builder/mmi.st
