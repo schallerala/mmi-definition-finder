@@ -5,69 +5,95 @@
     <meta name="google" content="notranslate">
     <title>PDF.js Single Page Viewer using built components</title>
 
+    <link rel="stylesheet" href="https://files.stork-search.net/basic.css" />
+    <link rel="stylesheet" href="./node_modules/pdfjs-dist/web/pdf_viewer.css">
     <style>
         body {
-            margin: 0;
             padding: 0;
             background-color: #DDD;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
         }
-        #viewerContainer {
-            overflow: auto;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
-        .search-wrap {
-            max-width: 1200px;
-            display: flex;
-            flex-direction: column;
-        }
 
         .stork-wrapper {
-            max-width: 550px;
-            width: 100%;
-            margin-bottom: 3rem;
+            max-width: 800px;
         }
 
-        .stork-output-visible {
-            z-index: 200;
-        }
-
-        .subtitle {
-            margin: 0.8em;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.8em;
-        }
+        html,
         body {
+            height: 100%;
+            margin: 0;
         }
 
-        h1 {
-            margin-top: 0;
+        .box {
+            display: flex;
+            flex-flow: column;
+            height: 100%;
         }
+
+        .box .row.header {
+            flex: 0 1 auto;
+            /* The above is shorthand for:
+            flex-grow: 0,
+            flex-shrink: 1,
+            flex-basis: auto
+            */
+        }
+
+        .box .row.content {
+            display: flex;
+            flex-flow: column;
+            flex: 1 1 auto;
+            overflow-y: hidden;
+        }
+
+        .content-container {
+            flex: 1;
+            display: flex;
+            overflow-y: hidden;
+        }
+
+        #viewerContainer {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            overflow-y: auto;
+        }
+
     </style>
-    <link rel="stylesheet" href="https://files.stork-search.net/basic.css" />
-    <link rel="stylesheet" href="./node_modules/pdfjs-dist/web/pdf_viewer.css">
+    <link rel="stylesheet" href="./css/tree-view.css" />
+    <link rel="stylesheet" href="./css/stork-more.css" />
 </head>
 
 <body tabindex="1">
-    <div class="search-wrap">
-        <div class="stork-wrapper">
-            <input data-stork="mmi" placeholder="Search..." class="stork-input">
-            <div class="stork-progress"></div>
-            <div data-stork="mmi-output" class="stork-output"></div>
+    <div class="box">
+
+        <div class="search-wrap row header">
+            <div class="stork-wrapper">
+                <div class="stork-input-container">
+                    <div>
+                        <input data-stork="mmi" placeholder="Search..." class="stork-input">
+                    </div>
+                </div>
+                <div data-stork="mmi-output" class="stork-output"></div>
+            </div>
         </div>
 
-        <script src="https://files.stork-search.net/stork.js"></script>
-        <script>stork.register("test", "/test.st");</script>
+        <div class="row content">
+            <div class="content-container">
 
+                <div id="treeViewContainer">
+                    <ul id="treeView">
+                    </ul>
+                </div>
 
+                <div id="viewerContainer">
+                    <div id="viewer" class="pdfViewer"></div>
+                </div>
+
+            </div>
+        </div>
     </div>
 
-    <div id="viewerContainer">
-        <div id="viewer" class="pdfViewer"></div>
-    </div>
 
     <script src="https://files.stork-search.net/stork.js"></script>
     <script src="./src/index.ts"></script>
