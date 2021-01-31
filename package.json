@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "parcel index.html output/*.st output/outline.json output/OrigMMI2020.pdf",
-    "build": "parcel build index.html output/*.st output/outline.json output/OrigMMI2020.pdf && cp netlify.toml dist"
+    "build": "parcel build index.html output/*.st output/outline.json output/OrigMMI2020.pdf && cp netlify.toml _headers dist"
   },
   "keywords": [],
   "author": "",
