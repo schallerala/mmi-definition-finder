@@ -1,22 +1,9 @@
 import {resetHighlight, templateItemsTree, TreeItem, wrapAll} from './TreeComponent';
 
-// @ts-ignore
-stork.register(
-    "mmi",
-    "output/mmi-all.st", {
-        onQueryUpdate: function (search, results) {
-            console.log("on query update");
-        },
-        onResultSelected: function (search, { entry: { fields: { page } }, excerpts }) {
-            searchFor = search;
-            console.log("page:", page);
-            return goToPage(parseInt(page), excerpts.length > 0, search);
-        }
-    }
-);
-
 import pdfjsLib = require("pdfjs-dist");
 import PDFViewer = require("pdfjs-dist/web/pdf_viewer");
+import * as storkModule from './stork';
+const stork = storkModule.stork;
 const outline = require('../output/outline.json') as Array<TreeItem>;
 require("pdfjs-dist/build/pdf.worker.entry");
 
@@ -26,7 +13,6 @@ const mmiPdf = "output/OrigMMI2020.pdf";
 const CMAP_URL = "./node_modules/pdfjs-dist/cmaps/";
 const CMAP_PACKED = true;
 
-let currentPage = 1;
 let numPages = 1;
 let searchFor = "";
 
@@ -74,8 +60,7 @@ PDFViewer.PDFHistory.prototype.push = function ({ pageNumber }) {
     // console.log("on push", arguments);
     // debugger;
     const parentReturn = initialPush.apply(this, arguments);
-    currentPage = pageNumber;
-    goToPage(currentPage);
+    goToPage(pageNumber);
     return parentReturn;
 }
 
@@ -92,8 +77,8 @@ eventBus.on("pagesinit", function () {
 });
 
 function goToPage (page: number, executeFind: boolean = false, query?: string) {
-    currentPage = checkPages(page);
-    pdfViewer.currentPageNumber = currentPage;
+    page = checkPages(page);
+    pdfViewer.currentPageNumber = page;
     if (executeFind && query)
         pdfFindController.executeCommand("find", { query });
     wrapAll(treeRoot);
@@ -123,6 +108,23 @@ async function loadDocument () {
 }
 
 (async () => {
+    // await initialize('pkg/stork.wasm');
+
+    // @ts-ignore
+    stork.register(
+        "mmi",
+        "output/mmi-all.st", {
+            onQueryUpdate: function (search, results) {
+                console.log("on query update");
+            },
+            onResultSelected: function (search, { entry: { fields: { page } }, excerpts }) {
+                searchFor = search;
+                console.log("page:", page);
+                return goToPage(parseInt(page), excerpts.length > 0, search);
+            }
+        }
+    );
+
     await loadDocument();
 
     templateItemsTree(
@@ -134,10 +136,10 @@ async function loadDocument () {
         if (target === document.body) {
             switch (key) {
                 case "b":
-                    goToPage(currentPage - 1);
+                    goToPage(pdfViewer.currentPageNumber - 1);
                     break;
                 case "n":
-                    goToPage(currentPage + 1);
+                    goToPage(pdfViewer.currentPageNumber + 1);
                     break;
             }
         }
