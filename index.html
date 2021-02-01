@@ -59,6 +59,9 @@
             overflow-y: auto;
         }
 
+        .stork-input-wrapper {
+            position: relative;
+        }
     </style>
     <link rel="stylesheet" href="./css/tree-view.css" />
     <link rel="stylesheet" href="./css/stork-more.css" />
@@ -71,6 +74,12 @@
             <div class="stork-wrapper">
                 <div class="stork-input-container">
                     <div>
+                        <label for="index-selection">Chapter selection</label>
+                        <select id="index-selection" name="index-selection">
+                            <option value="none">loading...</option>
+                        </select>
+                    </div>
+                    <div class="stork-input-wrapper">
                         <input data-stork="mmi" placeholder="Search..." class="stork-input">
                     </div>
                 </div>

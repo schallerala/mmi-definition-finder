@@ -5,6 +5,7 @@ import PDFViewer = require("pdfjs-dist/web/pdf_viewer");
 import * as storkModule from './stork';
 const stork = storkModule.stork;
 const outline = require('../output/outline.json') as Array<TreeItem>;
+const indexes = require('../output/indexes.json') as { [name: string]: string };
 require("pdfjs-dist/build/pdf.worker.entry");
 
 const mmiPdf = "output/OrigMMI2020.pdf";
@@ -108,14 +109,32 @@ async function loadDocument () {
 }
 
 (async () => {
-    // await initialize('pkg/stork.wasm');
+    const indexSelectDom = document.querySelector("#index-selection") as HTMLSelectElement;
+    indexSelectDom.innerHTML =
+        Object.entries(indexes).map(([key, index]) => `<option value="${key}">${key}</option>`).join('');
+
+    const defaultIndex = indexes.hasOwnProperty('all') ? 'all' : Object.keys(indexes)[0];
+    const indexQueryParam = getQueryVariable('index', defaultIndex);
+
+    const indexNameToLoad = indexes.hasOwnProperty(indexQueryParam)
+        ? indexQueryParam
+        : defaultIndex;
+
+    indexSelectDom.value = indexNameToLoad;
+
+    indexSelectDom.addEventListener('change', ({ target }) => {
+        const { value } = target as HTMLSelectElement;
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.set('index', value);
+        window.location.search = searchParams.toString();
+    })
 
     // @ts-ignore
     stork.register(
         "mmi",
-        "output/mmi-all.st", {
+        indexes[indexNameToLoad], {
             onQueryUpdate: function (search, results) {
-                console.log("on query update");
+                // console.log("on query update");
             },
             onResultSelected: function (search, { entry: { fields: { page } }, excerpts }) {
                 searchFor = search;
@@ -179,4 +198,17 @@ function makeSureVisible (page: number, rootElement: HTMLElement): void {
         }
     }
 
+}
+
+
+function getQueryVariable(variable: string, defaultValue?: string) {
+    const query = window.location.search.substring(1);
+    const vars = query.split('&');
+    for (let i = 0; i < vars.length; i++) {
+        const pair = vars[i].split('=');
+        if (decodeURIComponent(pair[0]) == variable) {
+            return decodeURIComponent(pair[1]);
+        }
+    }
+    return defaultValue;
 }
