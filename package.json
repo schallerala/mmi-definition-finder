@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "parcel index.html stork.wasm output/*.st output/*.json output/OrigMMI2020.pdf",
-    "build": "parcel build index.html stork.wasm output/*.st output/*.json output/OrigMMI2020.pdf"
+    "start": "parcel index.html output/*.st output/*.json output/OrigMMI2020.pdf",
+    "build": "parcel build index.html output/*.st output/*.json output/OrigMMI2020.pdf"
   },
   "keywords": [],
   "author": "",

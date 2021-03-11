@@ -1,12 +1,9 @@
 import {resetHighlight, templateItemsTree, TreeItem, wrapAll} from './TreeComponent';
 
-import pdfjsLib = require("pdfjs-dist");
-import PDFViewer = require("pdfjs-dist/web/pdf_viewer");
-import * as storkModule from './stork';
-const stork = storkModule.stork;
+// The workerSrc property shall be specified.
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@2.5.207/build/pdf.worker.min.js';
 const outline = require('../output/outline.json') as Array<TreeItem>;
 const indexes = require('../output/indexes.json') as { [name: string]: string };
-require("pdfjs-dist/build/pdf.worker.entry");
 
 const mmiPdf = "output/OrigMMI2020.pdf";
 
@@ -21,29 +18,29 @@ const container = document.getElementById("viewerContainer");
 
 const treeRoot = document.getElementById('treeView');
 
-const initialDispatch = PDFViewer.EventBus.prototype.dispatch;
-PDFViewer.EventBus.prototype.dispatch = function (eventName) {
+const initialDispatch = pdfjsViewer.EventBus.prototype.dispatch;
+pdfjsViewer.EventBus.prototype.dispatch = function (eventName) {
     // console.log("EVENT!! ", eventName, arguments, " <--");
     const superReturn = initialDispatch.apply(this, arguments);
     // console.log("Event return: ", superReturn);
     return superReturn;
 }
 
-const eventBus = new PDFViewer.EventBus();
+const eventBus = new pdfjsViewer.EventBus();
 
 // (Optionally) enable hyperlinks within PDF files.
-const pdfLinkService = new PDFViewer.PDFLinkService({
+const pdfLinkService = new pdfjsViewer.PDFLinkService({
     eventBus: eventBus,
 });
 
 
 // (Optionally) enable find controller.
-const pdfFindController = new PDFViewer.PDFFindController({
+const pdfFindController = new pdfjsViewer.PDFFindController({
     eventBus: eventBus,
     linkService: pdfLinkService,
 });
 
-const pdfViewer = new PDFViewer.PDFSinglePageViewer({
+const pdfViewer = new pdfjsViewer.PDFSinglePageViewer({
     container,
     eventBus,
     linkService: pdfLinkService,
@@ -56,8 +53,8 @@ pdfLinkService.setViewer(pdfViewer);
  *  and use the single page viewer!
  *  WE HAVE A WINNER! USE A a \href{#my-file.pdf}{TEXT} and capture in pdfHistory#push
  */
-const initialPush = PDFViewer.PDFHistory.prototype.push;
-PDFViewer.PDFHistory.prototype.push = function ({ pageNumber }) {
+const initialPush = pdfjsViewer.PDFHistory.prototype.push;
+pdfjsViewer.PDFHistory.prototype.push = function ({ pageNumber }) {
     // console.log("on push", arguments);
     // debugger;
     const parentReturn = initialPush.apply(this, arguments);
@@ -65,7 +62,7 @@ PDFViewer.PDFHistory.prototype.push = function ({ pageNumber }) {
     return parentReturn;
 }
 
-const pdfHistory = new PDFViewer.PDFHistory({
+const pdfHistory = new pdfjsViewer.PDFHistory({
     linkService: pdfLinkService,
     eventBus
 });
@@ -108,7 +105,7 @@ async function loadDocument () {
     pdfLinkService.setDocument(pdfDocument, null);
 }
 
-(async () => {
+function populateIndexesSelection (): string {
     const indexSelectDom = document.querySelector("#index-selection") as HTMLSelectElement;
     indexSelectDom.innerHTML =
         Object.entries(indexes).map(([key, index]) => `<option value="${key}">${key}</option>`).join('');
@@ -127,11 +124,26 @@ async function loadDocument () {
         const searchParams = new URLSearchParams(window.location.search);
         searchParams.set('index', value);
         window.location.search = searchParams.toString();
-    })
+        // FIXME, force download new index
+    });
 
+    return indexNameToLoad;
+}
+
+function hookIndexLoadOnActivate (dataStorkSelector: string, indexNameToLoad: string) {
+    const inputElement = document.querySelector(`input[data-stork="${dataStorkSelector}"]`);
+    inputElement.addEventListener('focus', () => {
+        loadIndex(dataStorkSelector, indexNameToLoad);
+        inputElement.classList.toggle('disabled');
+    }, {
+        once: true
+    });
+}
+
+function loadIndex (dataStorkSelector: string, indexNameToLoad: string) {
     // @ts-ignore
     stork.register(
-        "mmi",
+        dataStorkSelector,
         indexes[indexNameToLoad], {
             onQueryUpdate: function (search, results) {
                 // console.log("on query update");
@@ -143,6 +155,11 @@ async function loadDocument () {
             }
         }
     );
+}
+
+(async () => {
+    const selectedIndex = populateIndexesSelection();
+    hookIndexLoadOnActivate('mmi', selectedIndex);
 
     await loadDocument();
 
