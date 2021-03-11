@@ -136,22 +136,25 @@ function getIndexSelection (): string {
 function hookIndexLoadOnActivate (dataStorkSelector: string) {
     const inputElement = document.querySelector(`input[data-stork="${dataStorkSelector}"]`);
     inputElement.addEventListener('focus', () => {
-        loadIndex(dataStorkSelector);
-        inputElement.classList.toggle('disabled');
+        loadIndex(dataStorkSelector)
+            .then(() => inputElement.classList.remove('disabled'));
     }, {
         once: true
     });
 }
 
-function loadIndex (dataStorkSelector: string) {
+async function loadIndex (dataStorkSelector: string) {
     const indexNameToLoad = getIndexSelection();
 
+    // Following the code, we could believe we need a await on the download index
+    // however, with an await, the code breaks... therefore, if not loading, try adding
+    // await
     stork.downloadIndex(
         dataStorkSelector,
         indexes[indexNameToLoad], {
             // forceOverwrite: true, FIXME, wait release of new version
             onQueryUpdate: function (search, results) {
-                // console.log("on query update");
+                console.log("on query update");
             },
             onResultSelected: function (search, { entry: { fields: { page } }, excerpts }) {
                 searchFor = search;
@@ -160,6 +163,8 @@ function loadIndex (dataStorkSelector: string) {
             }
         }
     );
+
+    await stork.attach('mmi');
 }
 
 (async () => {

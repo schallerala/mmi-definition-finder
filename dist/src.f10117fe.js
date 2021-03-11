@@ -3463,29 +3463,33 @@ function getIndexSelection() {
 function hookIndexLoadOnActivate(dataStorkSelector) {
   const inputElement = document.querySelector(`input[data-stork="${dataStorkSelector}"]`);
   inputElement.addEventListener('focus', () => {
-    loadIndex(dataStorkSelector);
-    inputElement.classList.toggle('disabled');
+    loadIndex(dataStorkSelector).then(() => inputElement.classList.remove('disabled'));
   }, {
     once: true
   });
 }
 
 function loadIndex(dataStorkSelector) {
-  const indexNameToLoad = getIndexSelection();
-  stork.downloadIndex(dataStorkSelector, indexes[indexNameToLoad], {
-    onQueryUpdate: function (search, results) {},
-    onResultSelected: function (search, {
-      entry: {
-        fields: {
-          page
-        }
+  return __awaiter(this, void 0, void 0, function* () {
+    const indexNameToLoad = getIndexSelection();
+    stork.downloadIndex(dataStorkSelector, indexes[indexNameToLoad], {
+      onQueryUpdate: function (search, results) {
+        console.log("on query update");
       },
-      excerpts
-    }) {
-      searchFor = search;
-      console.log("page:", page);
-      return goToPage(parseInt(page), excerpts.length > 0, search);
-    }
+      onResultSelected: function (search, {
+        entry: {
+          fields: {
+            page
+          }
+        },
+        excerpts
+      }) {
+        searchFor = search;
+        console.log("page:", page);
+        return goToPage(parseInt(page), excerpts.length > 0, search);
+      }
+    });
+    yield stork.attach('mmi');
   });
 }
 
@@ -3591,7 +3595,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54024" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59130" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
