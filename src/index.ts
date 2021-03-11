@@ -105,7 +105,7 @@ async function loadDocument () {
     pdfLinkService.setDocument(pdfDocument, null);
 }
 
-function populateIndexesSelection (): string {
+function populateIndexesSelection () {
     const indexSelectDom = document.querySelector("#index-selection") as HTMLSelectElement;
     indexSelectDom.innerHTML =
         Object.entries(indexes).map(([key, index]) => `<option value="${key}">${key}</option>`).join('');
@@ -126,25 +126,30 @@ function populateIndexesSelection (): string {
         window.location.search = searchParams.toString();
         // FIXME, force download new index
     });
-
-    return indexNameToLoad;
 }
 
-function hookIndexLoadOnActivate (dataStorkSelector: string, indexNameToLoad: string) {
+function getIndexSelection (): string {
+    const { value } = document.querySelector("#index-selection") as HTMLSelectElement;
+    return value;
+}
+
+function hookIndexLoadOnActivate (dataStorkSelector: string) {
     const inputElement = document.querySelector(`input[data-stork="${dataStorkSelector}"]`);
     inputElement.addEventListener('focus', () => {
-        loadIndex(dataStorkSelector, indexNameToLoad);
+        loadIndex(dataStorkSelector);
         inputElement.classList.toggle('disabled');
     }, {
         once: true
     });
 }
 
-function loadIndex (dataStorkSelector: string, indexNameToLoad: string) {
-    // @ts-ignore
-    stork.register(
+function loadIndex (dataStorkSelector: string) {
+    const indexNameToLoad = getIndexSelection();
+
+    stork.downloadIndex(
         dataStorkSelector,
         indexes[indexNameToLoad], {
+            // forceOverwrite: true, FIXME, wait release of new version
             onQueryUpdate: function (search, results) {
                 // console.log("on query update");
             },
@@ -158,10 +163,13 @@ function loadIndex (dataStorkSelector: string, indexNameToLoad: string) {
 }
 
 (async () => {
-    const selectedIndex = populateIndexesSelection();
-    hookIndexLoadOnActivate('mmi', selectedIndex);
+    populateIndexesSelection();
+    hookIndexLoadOnActivate('mmi');
 
-    await loadDocument();
+    await Promise.all([
+        loadDocument(),
+        stork.initialize() // loads the wasm file
+    ]);
 
     templateItemsTree(
         outline.map(addPageNavigationOnTreeItem),

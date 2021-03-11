@@ -3451,21 +3451,28 @@ function populateIndexesSelection() {
     searchParams.set('index', value);
     window.location.search = searchParams.toString();
   });
-  return indexNameToLoad;
 }
 
-function hookIndexLoadOnActivate(dataStorkSelector, indexNameToLoad) {
+function getIndexSelection() {
+  const {
+    value
+  } = document.querySelector("#index-selection");
+  return value;
+}
+
+function hookIndexLoadOnActivate(dataStorkSelector) {
   const inputElement = document.querySelector(`input[data-stork="${dataStorkSelector}"]`);
   inputElement.addEventListener('focus', () => {
-    loadIndex(dataStorkSelector, indexNameToLoad);
+    loadIndex(dataStorkSelector);
     inputElement.classList.toggle('disabled');
   }, {
     once: true
   });
 }
 
-function loadIndex(dataStorkSelector, indexNameToLoad) {
-  stork.register(dataStorkSelector, indexes[indexNameToLoad], {
+function loadIndex(dataStorkSelector) {
+  const indexNameToLoad = getIndexSelection();
+  stork.downloadIndex(dataStorkSelector, indexes[indexNameToLoad], {
     onQueryUpdate: function (search, results) {},
     onResultSelected: function (search, {
       entry: {
@@ -3483,9 +3490,9 @@ function loadIndex(dataStorkSelector, indexNameToLoad) {
 }
 
 (() => __awaiter(void 0, void 0, void 0, function* () {
-  const selectedIndex = populateIndexesSelection();
-  hookIndexLoadOnActivate('mmi', selectedIndex);
-  yield loadDocument();
+  populateIndexesSelection();
+  hookIndexLoadOnActivate('mmi');
+  yield Promise.all([loadDocument(), stork.initialize()]);
   TreeComponent_1.templateItemsTree(outline.map(addPageNavigationOnTreeItem), treeRoot);
   document.addEventListener('keyup', ({
     key,
@@ -3584,7 +3591,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50499" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54024" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
